@@ -1,0 +1,7 @@
+[package]
+name = "neatproto-analysis"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+neatproto-ast = { path = "../ast" }

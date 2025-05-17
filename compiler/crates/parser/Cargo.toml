@@ -1,0 +1,8 @@
+[package]
+name = "neatproto-parser"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+neatproto-ast = { path = "../ast" }
+rstest = "0.25.0"

@@ -1,0 +1,9 @@
+[package]
+name = "neatproto-compiler-cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+clap = { version = "4.5.38", features = ["derive"] }
+neatproto-compiler = { path = "../compiler" }
+neatproto-codegen = { path = "../codegen" }

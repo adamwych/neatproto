@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/analysis",
+    "crates/ast",
+    "crates/benches",
+    "crates/codegen",
+    "crates/cli",
+    "crates/parser",
+    "crates/compiler"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[workspace.dependencies]
+convert_case = "0.8.0"

@@ -1,0 +1,9 @@
+[package]
+name = "neatproto-codegen"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+convert_case = { workspace = true }
+neatproto-analysis = { path = "../analysis" }
+neatproto-ast = { path = "../ast" }
