@@ -61,7 +61,7 @@ the structure up front in order to know how to deserialize it.
 ```abnf
 identifier      = ALPHA *(ALPHA / DIGIT / "_")
 block           = "{" *block-node "}"
-block-node      = *block *alias *structure-field
+block-node      = *alias *structure-field
 root-block      = *block-node 
 alias           = "alias" SP identifier *SP "=" *SP identifier *SP ";"
 structure       = "struct" SP identifier *SP "{" *structure-field *SP "}"
