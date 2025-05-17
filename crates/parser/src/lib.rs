@@ -35,13 +35,13 @@ impl<'a> Parser<'a> {
                 "struct" => self.parse_structure(),
                 "alias" => self.parse_alias(),
                 _ => Err(LocalizedParseError {
-                    error: ParseError::UnknownIdentifier,
-                    token,
+                    error: ParseError::UnknownIdentifier(value.clone()),
+                    location: token.location,
                 }),
             },
             _ => Err(LocalizedParseError {
-                error: ParseError::UnexpectedToken,
-                token,
+                error: ParseError::UnexpectedToken(token.token),
+                location: token.location,
             }),
         }
     }
@@ -56,20 +56,25 @@ impl<'a> Parser<'a> {
                 Token::Identifier(value) => {
                     fields.push(self.parse_structure_field(value)?);
                 }
-                Token::BraceClose => break,
+                Token::BraceClose => {
+                    return Ok(BlockNode::Structure(Structure {
+                        name: name_token.value(),
+                        fields,
+                    }));
+                }
                 _ => {
                     return Err(LocalizedParseError {
-                        error: ParseError::UnexpectedToken,
-                        token,
+                        error: ParseError::UnexpectedToken(token.token),
+                        location: token.location,
                     });
                 }
             }
         }
 
-        Ok(BlockNode::Structure(Structure {
-            name: name_token.value(),
-            fields,
-        }))
+        Err(LocalizedParseError {
+            error: ParseError::UnexpectedEndOfFile,
+            location: self.tokens.location.clone(),
+        })
     }
 
     fn parse_structure_field(&mut self, name: String) -> ParseResult<StructureField> {
@@ -132,33 +137,77 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_alias() {
+    fn test_alias() {
         let root_block = parse!("alias foo = bar;").expect("failed to parse root block");
+        assert_eq!(root_block.nodes.len(), 1);
         let first_node = root_block.nodes.first().expect("root block is empty");
         match first_node {
             BlockNode::Alias(alias) => {
                 assert_eq!(&alias.alias_name, "foo");
                 assert_eq!(&alias.aliased_type_name, "bar");
             }
-            _ => panic!("parsed node is not an alias"),
+            _ => panic!("first node is not an alias"),
         }
     }
 
     #[rstest]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:7")]
-    #[case("alias 123 = bar;")]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:13")]
-    #[case("alias bar = 123;")]
+    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:6")]
+    #[case("alias")]
     #[should_panic(expected = "Expected an identifier in file 'test' at line 1:6")]
     #[case("alias;")]
     #[should_panic(expected = "Expected '=' in file 'test' at line 1:11")]
     #[case("alias test;")]
-    fn test_parse_invalid_alias(#[case] code: &str) {
-        match parse!(code) {
-            Err(error) => {
-                panic!("{}", error);
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:7")]
+    #[case("alias 123 = bar;")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:13")]
+    #[case("alias bar = 123;")]
+    fn test_invalid_alias(#[case] code: &str) {
+        parse_panic_if_err(code);
+    }
+
+    #[test]
+    fn test_structure() {
+        let root_block =
+            parse!("struct Foo { bar: float; baz: uint8; }").expect("failed to parse root block");
+        assert_eq!(root_block.nodes.len(), 1);
+        let first_node = root_block.nodes.first().expect("root block is empty");
+        match first_node {
+            BlockNode::Structure(structure) => {
+                assert_eq!(&structure.name, "Foo");
+
+                let field_bar = structure.fields.get(0).expect("field #0 was not found");
+                assert_eq!(&field_bar.name, "bar");
+                assert_eq!(&field_bar.type_name.token.value(), "float");
+
+                let field_baz = structure.fields.get(1).expect("field #1 was not found");
+                assert_eq!(&field_baz.name, "baz");
+                assert_eq!(&field_baz.type_name.token.value(), "uint8");
             }
-            _ => (),
+            _ => panic!("first node is not a structure"),
         }
+    }
+
+    #[rstest]
+    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:7")]
+    #[case("struct")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:7")]
+    #[case("struct;")]
+    #[should_panic(expected = "Expected '{' in file 'test' at line 1:11")]
+    #[case("struct Foo;")]
+    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:13")]
+    #[case("struct Foo {")]
+    fn test_invalid_structure(#[case] code: &str) {
+        parse_panic_if_err(code);
+    }
+
+    #[rstest]
+    #[should_panic(expected = "Expected ':' in file 'test' at line 1:17")]
+    #[case("struct Foo { bar; }")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:18")]
+    #[case("struct Foo { bar:; }")]
+    #[should_panic(expected = "Expected ';' in file 'test' at line 1:23")]
+    #[case("struct Foo { bar:type }")]
+    fn test_invalid_structure_field(#[case] code: &str) {
+        parse_panic_if_err(code);
     }
 }

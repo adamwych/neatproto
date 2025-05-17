@@ -22,25 +22,32 @@ impl<'a> Tokens<'a> {
         }
     }
 
+    pub fn next_or_err(&mut self) -> ParseResult<LocalizedToken> {
+        self.next().ok_or_else(|| LocalizedParseError {
+            error: ParseError::UnexpectedEndOfFile,
+            location: self.location.clone(),
+        })
+    }
+
     pub fn next_identifier(&mut self) -> ParseResult<LocalizedToken> {
-        let token = self.next().expect("unexpected end of file");
+        let token = self.next_or_err()?;
         if matches!(token.token, Token::Identifier(_)) {
             return Ok(token);
         }
         Err(LocalizedParseError {
             error: ParseError::ExpectedIdentifier,
-            token,
+            location: token.location,
         })
     }
 
     pub fn next_kind(&mut self, kind: Token) -> ParseResult<LocalizedToken> {
-        let token = self.next().expect("unexpected end of file");
+        let token = self.next_or_err()?;
         if token.token == kind {
             return Ok(token);
         }
         Err(LocalizedParseError {
             error: ParseError::ExpectedTokenOfKind(kind),
-            token,
+            location: token.location,
         })
     }
 
