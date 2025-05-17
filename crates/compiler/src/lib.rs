@@ -1,9 +1,11 @@
+pub mod error;
 pub mod unit;
 
 use neatproto_codegen::CodeGenOptions;
 pub use neatproto_parser::SourceFile;
 use std::path::PathBuf;
 pub use unit::*;
+pub use error::*;
 
 pub fn compile_nproto_to_string(
     input_file_path: PathBuf,
