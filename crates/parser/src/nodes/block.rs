@@ -16,9 +16,9 @@ pub fn parse_block(tokens: &mut Tokens) -> Result<Block, LocalizedParseError> {
 pub fn parse_block_node(tokens: &mut Tokens, token: LocalizedToken) -> ParseResult<BlockNode> {
     match &token.token {
         Token::Identifier(value) => match value.as_str() {
-            "struct" => parse_structure(tokens),
-            "alias" => parse_alias(tokens),
-            "enum" => parse_enum(tokens),
+            "struct" => parse_structure(tokens).map(BlockNode::Structure),
+            "alias" => parse_alias(tokens).map(BlockNode::Alias),
+            "enum" => parse_enum(tokens).map(BlockNode::Enum),
             _ => Err(LocalizedParseError {
                 error: ParseError::UnknownIdentifier(value.clone()),
                 location: token.location,

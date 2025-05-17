@@ -1,7 +1,7 @@
 use crate::{LocalizedParseError, ParseError, ParseResult, Tokens};
-use neatproto_ast::{BlockNode, Enum, EnumItem, Token};
+use neatproto_ast::{Enum, EnumItem, Token};
 
-pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<BlockNode> {
+pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
     let name_token = tokens.next_identifier()?;
     let mut items = vec![];
 
@@ -31,10 +31,10 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<BlockNode> {
                 was_previous_token_comma = true;
             }
             Token::BraceClose => {
-                return Ok(BlockNode::Enum(Enum {
+                return Ok(Enum {
                     name: name_token.value(),
                     items,
-                }));
+                });
             }
             _ => {
                 return Err(LocalizedParseError {
@@ -53,9 +53,9 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<BlockNode> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::SourceFile;
     use crate::tests::parse;
+    use neatproto_ast::BlockNode;
     use rstest::rstest;
 
     #[test]

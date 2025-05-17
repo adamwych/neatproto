@@ -1,7 +1,7 @@
 use crate::{LocalizedParseError, ParseError, ParseResult, Tokens};
-use neatproto_ast::{BlockNode, Structure, StructureField, Token, TypeName};
+use neatproto_ast::{Structure, StructureField, Token, TypeName};
 
-pub fn parse_structure(tokens: &mut Tokens) -> ParseResult<BlockNode> {
+pub fn parse_structure(tokens: &mut Tokens) -> ParseResult<Structure> {
     let name_token = tokens.next_identifier()?;
     let mut fields = vec![];
 
@@ -12,10 +12,10 @@ pub fn parse_structure(tokens: &mut Tokens) -> ParseResult<BlockNode> {
                 fields.push(parse_structure_field(tokens, value)?);
             }
             Token::BraceClose => {
-                return Ok(BlockNode::Structure(Structure {
+                return Ok(Structure {
                     name: name_token.value(),
                     fields,
-                }));
+                });
             }
             _ => {
                 return Err(LocalizedParseError {
@@ -48,10 +48,10 @@ pub fn parse_structure_field(tokens: &mut Tokens, name: String) -> ParseResult<S
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::SourceFile;
     use crate::tests::parse;
     use rstest::rstest;
+    use neatproto_ast::BlockNode;
 
     #[test]
     fn test_structure() {

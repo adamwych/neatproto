@@ -1,23 +1,23 @@
 use crate::{ParseResult, Tokens};
-use neatproto_ast::{Alias, BlockNode, Token};
+use neatproto_ast::{Alias, Token};
 
-pub fn parse_alias(tokens: &mut Tokens) -> ParseResult<BlockNode> {
+pub fn parse_alias(tokens: &mut Tokens) -> ParseResult<Alias> {
     let alias_name_token = tokens.next_identifier()?;
     tokens.next_kind(Token::Equal)?;
     let aliased_type_name_token = tokens.next_identifier()?;
     tokens.next_kind(Token::Semicolon)?;
 
-    Ok(BlockNode::Alias(Alias {
+    Ok(Alias {
         alias_name: alias_name_token.value(),
         aliased_type_name: aliased_type_name_token.value(),
-    }))
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::SourceFile;
     use crate::tests::parse;
+    use neatproto_ast::BlockNode;
     use rstest::rstest;
 
     #[test]
