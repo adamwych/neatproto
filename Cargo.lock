@@ -421,6 +421,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "neatproto-cli"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "neatproto-codegen",
+ "neatproto-compiler",
+]
+
+[[package]]
 name = "neatproto-codegen"
 version = "0.1.0"
 dependencies = [
@@ -438,15 +447,6 @@ dependencies = [
  "neatproto-ast",
  "neatproto-codegen",
  "neatproto-parser",
-]
-
-[[package]]
-name = "neatproto-compiler-cli"
-version = "0.1.0"
-dependencies = [
- "clap",
- "neatproto-codegen",
- "neatproto-compiler",
 ]
 
 [[package]]

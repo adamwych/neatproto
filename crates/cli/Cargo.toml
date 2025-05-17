@@ -1,5 +1,5 @@
 [package]
-name = "neatproto-compiler-cli"
+name = "neatproto-cli"
 version.workspace = true
 edition.workspace = true
 
