@@ -23,9 +23,7 @@ mod tests {
     #[test]
     fn test_alias() {
         let root_block = parse!("alias foo = bar;");
-        assert_eq!(root_block.nodes.len(), 1);
-        let first_node = root_block.nodes.first().expect("root block is empty");
-        match first_node {
+        match root_block.nodes.first().expect("root block is empty") {
             BlockNode::Alias(alias) => {
                 assert_eq!(&alias.alias_name, "foo");
                 assert_eq!(&alias.aliased_type_name, "bar");

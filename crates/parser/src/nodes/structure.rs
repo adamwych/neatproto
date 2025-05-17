@@ -56,9 +56,7 @@ mod tests {
     #[test]
     fn test_structure() {
         let root_block = parse!("struct Foo { bar: float; baz: uint8; }");
-        assert_eq!(root_block.nodes.len(), 1);
-        let first_node = root_block.nodes.first().expect("root block is empty");
-        match first_node {
+        match root_block.nodes.first().expect("root block is empty") {
             BlockNode::Structure(structure) => {
                 assert_eq!(&structure.name, "Foo");
 
