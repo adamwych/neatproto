@@ -1,4 +1,6 @@
-use crate::{LocalizedParseError, ParseError, ParseResult, Tokens, parse_alias, parse_structure};
+use crate::{
+    LocalizedParseError, ParseError, ParseResult, Tokens, parse_alias, parse_enum, parse_structure,
+};
 use neatproto_ast::{Block, BlockNode, LocalizedToken, Token};
 
 pub fn parse_block(tokens: &mut Tokens) -> Result<Block, LocalizedParseError> {
@@ -16,6 +18,7 @@ pub fn parse_block_node(tokens: &mut Tokens, token: LocalizedToken) -> ParseResu
         Token::Identifier(value) => match value.as_str() {
             "struct" => parse_structure(tokens),
             "alias" => parse_alias(tokens),
+            "enum" => parse_enum(tokens),
             _ => Err(LocalizedParseError {
                 error: ParseError::UnknownIdentifier(value.clone()),
                 location: token.location,

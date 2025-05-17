@@ -31,5 +31,6 @@ pub struct CodeGenOptions {
 pub struct RustCodeGenOptions {
     pub with_debug: bool,
     pub with_serde: bool,
-    pub serde_field_name_case: NameCase,
+    pub serde_struct_field_name_case: NameCase,
+    pub serde_enum_repr: Option<String>,
 }

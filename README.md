@@ -66,4 +66,5 @@ root-block      = *block-node
 alias           = "alias" SP identifier *SP "=" *SP identifier *SP ";"
 structure       = "struct" SP identifier *SP "{" *structure-field *SP "}"
 structure-field = identifier *SP ":" *SP identifier *SP ";"
+enum            = "enum" SP identifier *SP "{" [identifier *("," *SP identifier) [","] *SP] "}"
 ```

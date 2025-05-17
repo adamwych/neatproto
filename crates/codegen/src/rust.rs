@@ -1,7 +1,7 @@
 use crate::writer::IndentedWriter;
 use crate::{CodeGenOptions, NameCase};
 use convert_case::Case;
-use neatproto_ast::{Alias, Block, BlockNode, BuiltinTypeName, Structure};
+use neatproto_ast::{Alias, Block, BlockNode, BuiltinTypeName, Enum, Structure};
 
 pub fn generate_rust(opts: &CodeGenOptions, root_block: &Block) -> String {
     let mut writer = IndentedWriter::default();
@@ -25,6 +25,7 @@ fn write_block(
             BlockNode::Block(block) => write_block(opts, writer, block, true),
             BlockNode::Structure(structure) => write_structure(opts, writer, structure),
             BlockNode::Alias(alias) => write_alias(opts, writer, alias),
+            BlockNode::Enum(e) => write_enum(opts, writer, e),
         }
     }
 
@@ -40,14 +41,11 @@ fn write_structure(opts: &CodeGenOptions, writer: &mut IndentedWriter, structure
     }
     if opts.rust.with_serde {
         writer.write_line("#[derive(Serialize, Deserialize)]");
-    }
-    match opts.rust.serde_field_name_case {
-        NameCase::Other(case) => {
-            if let Some(serde_name) = map_case_to_serde(&case) {
-                writer.write_line(format!("#[serde(rename_all = \"{}\")]", serde_name));
-            }
+
+        if let NameCase::Other(case) = opts.rust.serde_struct_field_name_case {
+            let serde_name = map_case_to_serde(&case).expect("invalid `serde_field_name_case`");
+            writer.write_line(format!("#[serde(rename_all = \"{}\")]", serde_name));
         }
-        _ => (),
     }
 
     writer.write_line(format!(
@@ -74,6 +72,33 @@ fn write_alias(opts: &CodeGenOptions, writer: &mut IndentedWriter, alias: &Alias
         opts.type_name_case.format(&alias.alias_name),
         translate_type_name(opts, &alias.aliased_type_name)
     ));
+}
+
+fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
+    if opts.rust.with_debug {
+        writer.write_line("#[derive(Debug)]");
+    }
+    if opts.rust.with_serde {
+        if let Some(repr) = &opts.rust.serde_enum_repr {
+            writer.write_line("#[derive(Serialize_repr, Deserialize_repr)]");
+            writer.write_line(format!("#[repr({})]", repr));
+        } else {
+            writer.write_line("#[derive(Serialize, Deserialize)]");
+        }
+    }
+
+    writer.write_line(format!(
+        "pub enum {} {{",
+        opts.type_name_case.format(&e.name)
+    ));
+    writer.push_indent();
+
+    for item in &e.items {
+        writer.write_line(format!("{},", opts.field_name_case.format(&item.name),));
+    }
+
+    writer.pop_indent();
+    writer.write_line("}");
 }
 
 /// Maps `Case` enum to a value that `#[serde(rename_all = ???)]` supports.
