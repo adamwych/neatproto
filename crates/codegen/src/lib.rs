@@ -5,13 +5,13 @@ pub use convert_case::{Case, Casing};
 pub use rust::*;
 
 #[derive(Default, Copy, Clone)]
-pub enum NameCase<'a> {
+pub enum NameCase {
     #[default]
     Unchanged,
-    Other(Case<'a>),
+    Other(Case<'static>),
 }
 
-impl<'a> NameCase<'a> {
+impl NameCase {
     pub fn format(self, name: &String) -> String {
         match self {
             NameCase::Unchanged => name.clone(),
@@ -22,8 +22,8 @@ impl<'a> NameCase<'a> {
 
 #[derive(Default)]
 pub struct CodeGenOptions {
-    pub field_name_case: NameCase<'static>,
-    pub type_name_case: NameCase<'static>, 
+    pub field_name_case: NameCase,
+    pub type_name_case: NameCase,
     pub rust: RustCodeGenOptions,
 }
 
@@ -31,5 +31,5 @@ pub struct CodeGenOptions {
 pub struct RustCodeGenOptions {
     pub with_debug: bool,
     pub with_serde: bool,
-    pub serde_field_name_case: NameCase<'static>,
+    pub serde_field_name_case: NameCase,
 }
