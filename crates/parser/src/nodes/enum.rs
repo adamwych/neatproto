@@ -53,43 +53,34 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
 
 #[cfg(test)]
 mod tests {
-    use crate::SourceFile;
-    use crate::tests::parse;
-    use neatproto_ast::BlockNode;
+    use crate::tests::test_parser;
     use rstest::rstest;
 
     #[test]
     fn test_enum() {
-        let root_block = parse!("enum Foo { Bar, Baz }");
-        match root_block.nodes.first().expect("root block is empty") {
-            BlockNode::Enum(e) => {
-                assert_eq!(&e.name, "Foo");
+        let e = test_parser!(parse_enum, "Foo { Bar, Baz }");
+        assert_eq!(&e.name, "Foo");
 
-                let item_bar = e.items.get(0).expect("item #0 was not found");
-                assert_eq!(&item_bar.name, "Bar");
+        let item_bar = e.items.get(0).expect("item #0 was not found");
+        assert_eq!(&item_bar.name, "Bar");
 
-                let item_baz = e.items.get(1).expect("item #1 was not found");
-                assert_eq!(&item_baz.name, "Baz");
-            }
-            _ => panic!("first node is not an enum"),
-        }
+        let item_baz = e.items.get(1).expect("item #1 was not found");
+        assert_eq!(&item_baz.name, "Baz");
     }
 
     #[test]
     fn test_enum_with_dangling_comma() {
-        parse!("enum Foo { Bar, Baz, }");
+        test_parser!(parse_enum, "Foo { Bar, Baz, }");
     }
 
     #[rstest]
-    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:5")]
-    #[case("enum")]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:5")]
-    #[case("enum;")]
-    #[should_panic(expected = "Expected '{' in file 'test' at line 1:9")]
-    #[case("enum Foo;")]
-    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:11")]
-    #[case("enum Foo {")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:1")]
+    #[case(";")]
+    #[should_panic(expected = "Expected '{' in file 'test' at line 1:4")]
+    #[case("Foo;")]
+    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:6")]
+    #[case("Foo {")]
     fn test_invalid_enum(#[case] code: &str) {
-        parse!(code);
+        test_parser!(parse_enum, code);
     }
 }

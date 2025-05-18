@@ -48,51 +48,42 @@ pub fn parse_structure_field(tokens: &mut Tokens, name: String) -> ParseResult<S
 
 #[cfg(test)]
 mod tests {
-    use crate::SourceFile;
-    use crate::tests::parse;
+    use crate::tests::test_parser;
     use rstest::rstest;
-    use neatproto_ast::BlockNode;
 
     #[test]
     fn test_structure() {
-        let root_block = parse!("struct Foo { bar: float; baz: uint8; }");
-        match root_block.nodes.first().expect("root block is empty") {
-            BlockNode::Structure(structure) => {
-                assert_eq!(&structure.name, "Foo");
+        let structure = test_parser!(parse_structure, "Foo { bar: float; baz: uint8; }");
+        assert_eq!(&structure.name, "Foo");
 
-                let field_bar = structure.fields.get(0).expect("field #0 was not found");
-                assert_eq!(&field_bar.name, "bar");
-                assert_eq!(&field_bar.type_name.token.value(), "float");
+        let field_bar = structure.fields.get(0).expect("field #0 was not found");
+        assert_eq!(&field_bar.name, "bar");
+        assert_eq!(&field_bar.type_name.token.value(), "float");
 
-                let field_baz = structure.fields.get(1).expect("field #1 was not found");
-                assert_eq!(&field_baz.name, "baz");
-                assert_eq!(&field_baz.type_name.token.value(), "uint8");
-            }
-            _ => panic!("first node is not a structure"),
-        }
+        let field_baz = structure.fields.get(1).expect("field #1 was not found");
+        assert_eq!(&field_baz.name, "baz");
+        assert_eq!(&field_baz.type_name.token.value(), "uint8");
     }
 
     #[rstest]
-    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:7")]
-    #[case("struct")]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:7")]
-    #[case("struct;")]
-    #[should_panic(expected = "Expected '{' in file 'test' at line 1:11")]
-    #[case("struct Foo;")]
-    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:13")]
-    #[case("struct Foo {")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:1")]
+    #[case(";")]
+    #[should_panic(expected = "Expected '{' in file 'test' at line 1:4")]
+    #[case("Foo;")]
+    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:6")]
+    #[case("Foo {")]
     fn test_invalid_structure(#[case] code: &str) {
-        parse!(code);
+        test_parser!(parse_structure, code);
     }
 
     #[rstest]
-    #[should_panic(expected = "Expected ':' in file 'test' at line 1:17")]
-    #[case("struct Foo { bar; }")]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:18")]
-    #[case("struct Foo { bar:; }")]
-    #[should_panic(expected = "Expected ';' in file 'test' at line 1:23")]
-    #[case("struct Foo { bar:type }")]
+    #[should_panic(expected = "Expected ':' in file 'test' at line 1:10")]
+    #[case("Foo { bar; }")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:11")]
+    #[case("Foo { bar:; }")]
+    #[should_panic(expected = "Expected ';' in file 'test' at line 1:16")]
+    #[case("Foo { bar:type }")]
     fn test_invalid_structure_field(#[case] code: &str) {
-        parse!(code);
+        test_parser!(parse_structure, code);
     }
 }

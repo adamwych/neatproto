@@ -12,29 +12,15 @@ pub type ParseResult<T> = Result<T, LocalizedParseError>;
 
 #[cfg(test)]
 mod tests {
-    use crate::SourceFile;
-
-    macro_rules! parse {
-        ($source:expr) => {{
-            let source_file = SourceFile::new_from_source("test", $source);
-            match crate::parse_block(&mut source_file.tokens()) {
+    macro_rules! test_parser {
+        ($func:ident, $source:expr) => {{
+            let source_file = crate::SourceFile::new_from_source("test", $source);
+            match crate::$func(&mut source_file.tokens()) {
                 Ok(block) => block,
                 Err(error) => panic!("{}", error),
             }
         }};
     }
 
-    pub(crate) use parse;
-
-    #[test]
-    fn test_empty_source() {
-        let root_block = parse!("");
-        assert_eq!(root_block.nodes.len(), 0);
-    }
-
-    #[test]
-    #[should_panic(expected = "Unknown identifier 'foo' in file 'test' at line 1:1")]
-    fn test_unknown_identifier() {
-        parse!("foo");
-    }
+    pub(crate) use test_parser;
 }

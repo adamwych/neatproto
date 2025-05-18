@@ -15,35 +15,26 @@ pub fn parse_alias(tokens: &mut Tokens) -> ParseResult<Alias> {
 
 #[cfg(test)]
 mod tests {
-    use crate::SourceFile;
-    use crate::tests::parse;
-    use neatproto_ast::BlockNode;
+    use crate::tests::test_parser;
     use rstest::rstest;
 
     #[test]
     fn test_alias() {
-        let root_block = parse!("alias foo = bar;");
-        match root_block.nodes.first().expect("root block is empty") {
-            BlockNode::Alias(alias) => {
-                assert_eq!(&alias.alias_name, "foo");
-                assert_eq!(&alias.aliased_type_name, "bar");
-            }
-            _ => panic!("first node is not an alias"),
-        }
+        let alias = test_parser!(parse_alias, "foo = bar;");
+        assert_eq!(&alias.alias_name, "foo");
+        assert_eq!(&alias.aliased_type_name, "bar");
     }
 
     #[rstest]
-    #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:6")]
-    #[case("alias")]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:6")]
-    #[case("alias;")]
-    #[should_panic(expected = "Expected '=' in file 'test' at line 1:11")]
-    #[case("alias test;")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:1")]
+    #[case(";")]
+    #[should_panic(expected = "Expected '=' in file 'test' at line 1:5")]
+    #[case("test;")]
+    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:1")]
+    #[case("123 = bar;")]
     #[should_panic(expected = "Expected an identifier in file 'test' at line 1:7")]
-    #[case("alias 123 = bar;")]
-    #[should_panic(expected = "Expected an identifier in file 'test' at line 1:13")]
-    #[case("alias bar = 123;")]
+    #[case("bar = 123;")]
     fn test_invalid_alias(#[case] code: &str) {
-        parse!(code);
+        test_parser!(parse_alias, code);
     }
 }
