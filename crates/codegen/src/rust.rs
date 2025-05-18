@@ -75,6 +75,7 @@ fn write_alias(opts: &CodeGenOptions, writer: &mut IndentedWriter, alias: &Alias
 }
 
 fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
+    writer.write_line("#[derive(Clone, Copy, PartialEq, Eq)]");
     if opts.rust.with_debug {
         writer.write_line("#[derive(Debug)]");
     }
