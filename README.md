@@ -49,21 +49,24 @@ See the <a href="#Comparison">Comparison</a> section to see how NeatProto compar
 
 ## Comparison
 
-|                     | NeatProto | Protocol Buffers | Flatbuffers | Apache Thrift |
-|---------------------|:---------:|:----------------:|:-----------:|:-------------:|
-| Structures          |     ✅     |        ✅         |      ✅      |       ✅       |
-| Enums               |     ✅     |        ✅         |      ✅      |       ✅       |
-| Type aliases        |     ✅     |        ❌         |      ❌      |       ✅       |
-| 1:1 binary format*  |    🚧     |        ❌         |      ❌      |       ❌       |
-| 128-bit integers    |     ✅     |        ❌         |      ❌      |       ❌       |
-| Embedded protocol** |     ❌     |        ✅         |      ❌      |       ❌       |
+|                       |                                NeatProto                                | Protocol Buffers | Flatbuffers | Apache Thrift |
+|-----------------------|:-----------------------------------------------------------------------:|:----------------:|:-----------:|:-------------:|
+| Structures            |                                    ✅                                    |        ✅         |      ✅      |       ✅       |
+| Enums                 |                                    ✅                                    |        ✅         |      ✅      |       ✅       |
+| Type aliases          |                                    ✅                                    |        ❌         |      ❌      |       ✅       |
+| Unions                | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/1) |        ✅         |      ✅      |       ✅       |
+| Namespaces / packages | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/2) |        ✅         |      ✅      |       ✅       |
+| RPC / services        |                                    ❌                                    |        ✅         |      ✅      |       ✅       |
+| Comments              | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/3) |        🟡        |     🟡      |      🟡       |
+| 128-bit integers      |                                    ✅                                    |        ❌         |      ❌      |       ❌       |
+| Embedded protocol*    |                                    ❌                                    |        ✅         |      ❌      |       ❌       |
 
 ✅ = Implemented.
+🟡 = Implemented, but less advanced.
 🚧 = In Progress / Planned.
 ❌ = Not Implemented.
 
-\* - All other formats include some metadata or padding in serialized binary data - NeatProto does not. \
-\** - Some other formats allow you to store the protocol as part of serialized data - NeatProto requires you to know
+\* - Some other formats allow you to store the protocol as part of serialized data - NeatProto requires you to know
 the structure up front in order to know how to deserialize it.
 
 ## Grammar
