@@ -24,6 +24,7 @@ impl NameCase {
 pub struct CodeGenOptions {
     pub field_name_case: NameCase,
     pub type_name_case: NameCase,
+    pub enum_item_name_case: NameCase,
     pub rust: RustCodeGenOptions,
 }
 
