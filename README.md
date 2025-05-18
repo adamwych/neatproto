@@ -1,7 +1,7 @@
 # NeatProto
 
-NeatProto is an interface description language. It allows you to design an interface and automatically generate
-corresponding code for: Rust (... more coming soon!).
+NeatProto is an interface description language.
+It allows you to design an interface and automatically generate corresponding code for: Rust (... more coming soon!).
 
 ### Why would I need it?
 
@@ -9,7 +9,7 @@ Imagine you have a client application written in C#, and a server application wr
 You will probably want to send some messages between those two, and that means that you need
 a way to define the structure that will be sent over the network in both, C# and Rust.
 
-The easiest way would be to simply maintain two implementations and manually synchronize them whenever
+The easiest way would be to maintain two implementations and manually synchronize them whenever
 you make any change, but that's very inefficient and error-prone. Instead, you can simply write a NeatProto file and
 then generate corresponding C# and Rust code automatically.
 
@@ -41,7 +41,7 @@ enum CommandType {
 
 See the <a href="#Comparison">Comparison</a> section to see how NeatProto compares to other popular formats.
 
-## Generates code for:
+## Targets
 
 * Rust
     - NeatProto compiler is available as a crate, so you can easily integrate it with your Rust project using a
