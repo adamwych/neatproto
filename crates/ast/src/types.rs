@@ -3,6 +3,8 @@ use crate::LocalizedToken;
 #[derive(Debug)]
 pub struct TypeName {
     pub token: LocalizedToken,
+    pub is_array: bool,
+    pub array_size: Option<LocalizedToken>,
     pub resolved: Option<String>,
 }
 

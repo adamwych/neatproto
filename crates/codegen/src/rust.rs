@@ -1,7 +1,7 @@
 use crate::writer::IndentedWriter;
 use crate::{CodeGenOptions, NameCase};
 use convert_case::Case;
-use neatproto_ast::{Alias, Block, BlockNode, BuiltinTypeName, Enum, Structure};
+use neatproto_ast::{Alias, Block, BlockNode, BuiltinTypeName, Enum, Structure, TypeName};
 
 pub fn generate_rust(opts: &CodeGenOptions, root_block: &Block) -> String {
     let mut writer = IndentedWriter::default();
@@ -58,7 +58,7 @@ fn write_structure(opts: &CodeGenOptions, writer: &mut IndentedWriter, structure
         writer.write_line(format!(
             "pub {}: {},",
             opts.field_name_case.format(&field.name),
-            translate_type_name(opts, &field.type_name.token.value())
+            get_full_type_name(opts, &field.type_name)
         ));
     }
 
@@ -122,6 +122,17 @@ fn map_case_to_serde(case: &Case) -> Option<&'static str> {
         Case::UpperKebab => Some("SCREAMING-KEBAB-CASE"),
         _ => None,
     }
+}
+
+fn get_full_type_name(opts: &CodeGenOptions, type_name: &TypeName) -> String {
+    let name = translate_type_name(opts, &type_name.token.value());
+    if type_name.is_array {
+        if let Some(size) = &type_name.array_size {
+            return format!("[{}; {}]", name, size.value());
+        }
+        return format!("Vec<{}>", name);
+    }
+    name
 }
 
 fn translate_type_name(opts: &CodeGenOptions, type_name: &String) -> String {

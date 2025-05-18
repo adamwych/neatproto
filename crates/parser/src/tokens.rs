@@ -128,6 +128,8 @@ impl<'a> Tokens<'a> {
             ')' => Some(Token::ParenClose),
             '{' => Some(Token::BraceOpen),
             '}' => Some(Token::BraceClose),
+            '[' => Some(Token::SquareOpen),
+            ']' => Some(Token::SquareClose),
             ':' => Some(Token::Colon),
             ';' => Some(Token::Semicolon),
             '=' => Some(Token::Equal),

@@ -24,6 +24,7 @@ struct PlayerInfo {
     uuid: Uuid;
     name: string;
     healthPoints: float;
+    commands: CommandType[4];
 }
 
 enum CommandType {
@@ -37,6 +38,7 @@ enum CommandType {
 * Structures.
 * Enums.
 * Type aliases.
+* Dynamic and fixed-size arrays.
 * 128-bit integer types.
 
 See the <a href="#Comparison">Comparison</a> section to see how NeatProto compares to other popular formats.
