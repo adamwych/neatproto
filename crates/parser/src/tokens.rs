@@ -40,6 +40,17 @@ impl<'a> Tokens<'a> {
         })
     }
 
+    pub fn next_literal(&mut self) -> ParseResult<LocalizedToken> {
+        let token = self.next_or_err()?;
+        if matches!(token.token, Token::Identifier(_) | Token::Digit(_)) {
+            return Ok(token);
+        }
+        Err(LocalizedParseError {
+            error: ParseError::ExpectedLiteral,
+            location: token.location,
+        })
+    }
+
     pub fn next_kind(&mut self, kind: Token) -> ParseResult<LocalizedToken> {
         let token = self.next_or_err()?;
         if token.token == kind {

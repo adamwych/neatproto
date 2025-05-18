@@ -22,10 +22,21 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
 
                 items.push(EnumItem {
                     name: value.clone(),
+                    value_token: None,
                 });
 
                 is_first_identifier = false;
                 was_previous_token_comma = false;
+            }
+            Token::Equal => {
+                if let Some(last_item) = items.last_mut() {
+                    last_item.value_token = Some(tokens.next_literal()?);
+                } else {
+                    return Err(LocalizedParseError {
+                        error: ParseError::UnexpectedToken(token.token),
+                        location: token.location,
+                    });
+                }
             }
             Token::Comma => {
                 was_previous_token_comma = true;
@@ -54,18 +65,28 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
 #[cfg(test)]
 mod tests {
     use crate::tests::test_parser;
+    use neatproto_ast::Token;
     use rstest::rstest;
 
     #[test]
     fn test_enum() {
-        let e = test_parser!(parse_enum, "Foo { Bar, Baz }");
+        let e = test_parser!(parse_enum, "Foo { Bar = 1, Baz }");
         assert_eq!(&e.name, "Foo");
 
         let item_bar = e.items.get(0).expect("item #0 was not found");
         assert_eq!(&item_bar.name, "Bar");
+        assert_eq!(
+            item_bar
+                .value_token
+                .as_ref()
+                .expect("item #0 should have a value")
+                .token,
+            Token::Digit("1".to_string())
+        );
 
         let item_baz = e.items.get(1).expect("item #1 was not found");
         assert_eq!(&item_baz.name, "Baz");
+        assert!(item_baz.value_token.is_none());
     }
 
     #[test]
@@ -80,6 +101,8 @@ mod tests {
     #[case("Foo;")]
     #[should_panic(expected = "Unexpected end of file in file 'test' at line 1:6")]
     #[case("Foo {")]
+    #[should_panic(expected = "Expected a literal in file 'test' at line 1:13")]
+    #[case("Foo { Bar = \"strings-not-allowed\" }")]
     fn test_invalid_enum(#[case] code: &str) {
         test_parser!(parse_enum, code);
     }

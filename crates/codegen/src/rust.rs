@@ -94,7 +94,14 @@ fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
     writer.push_indent();
 
     for item in &e.items {
-        writer.write_line(format!("{},", opts.field_name_case.format(&item.name),));
+        writer.write_indented(opts.field_name_case.format(&item.name));
+
+        if let Some(value_token) = &item.value_token {
+            writer.write(format!(" = {}", value_token.token.value()).as_str());
+        }
+
+        writer.write(",");
+        writer.next_line();
     }
 
     writer.pop_indent();

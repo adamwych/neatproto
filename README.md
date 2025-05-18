@@ -25,6 +25,11 @@ struct PlayerInfo {
     name: string;
     healthPoints: float;
 }
+
+enum CommandType {
+    Spawn = 1,
+    Despawn = 2,
+}
 ```
 
 ## Features
@@ -60,11 +65,13 @@ the structure up front in order to know how to deserialize it.
 
 ```abnf
 identifier      = ALPHA *(ALPHA / DIGIT / "_")
+literal         = identifier / DIGIT
+
 block           = "{" *block-node "}"
 block-node      = *alias *structure-field
 root-block      = *block-node 
 alias           = "alias" SP identifier *SP "=" *SP identifier *SP ";"
 structure       = "struct" SP identifier *SP "{" *structure-field *SP "}"
 structure-field = identifier *SP ":" *SP identifier *SP ";"
-enum            = "enum" SP identifier *SP "{" [identifier *("," *SP identifier) [","] *SP] "}"
+enum            = "enum" SP identifier *SP "{" [identifier *(["=" *SP literal] *SP "," *SP identifier) [","] *SP] "}"
 ```

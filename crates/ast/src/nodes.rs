@@ -1,4 +1,4 @@
-use crate::TypeName;
+use crate::{LocalizedToken, TypeName};
 
 #[derive(Debug)]
 pub struct Block {
@@ -40,4 +40,5 @@ pub struct Enum {
 #[derive(Debug)]
 pub struct EnumItem {
     pub name: String,
+    pub value_token: Option<LocalizedToken>,
 }

@@ -8,6 +8,7 @@ pub enum ParseError {
     ExpectedIdentifier,
     ExpectedTokenOfKind(Token),
     UnexpectedEndOfFile,
+    ExpectedLiteral,
 }
 
 impl Display for ParseError {
@@ -18,6 +19,7 @@ impl Display for ParseError {
             ParseError::ExpectedIdentifier => write!(f, "Expected an identifier"),
             ParseError::ExpectedTokenOfKind(kind) => write!(f, "Expected '{}'", kind.value()),
             ParseError::UnexpectedEndOfFile => write!(f, "Unexpected end of file"),
+            ParseError::ExpectedLiteral => write!(f, "Expected a literal"),
         }
     }
 }
