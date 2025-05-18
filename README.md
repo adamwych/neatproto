@@ -1,7 +1,8 @@
 # NeatProto
 
 NeatProto is an interface description language.
-It allows you to design an interface and automatically generate corresponding code for: Rust (... more coming soon!).
+It allows you to design an interface and automatically generate corresponding code for: C# and Rust (... more coming
+soon!).
 
 ### Why would I need it?
 
@@ -39,16 +40,20 @@ enum CommandType {
 
 ## Features
 
-* Structures.
-* Enums.
-* Type aliases.
-* Dynamic and fixed-size arrays.
-* 128-bit integer types.
+* Structures
+* Enums
+* Type aliases
+* Tagged unions
+* Lists and fixed size arrays
+* 128-bit integer types
 
 See the <a href="#Comparison">Comparison</a> section to see how NeatProto compares to other popular formats.
 
-## Targets
+## Supported targets
 
+* C#
+    - Requires C# 11.
+    - Serializing/deserializing tagged unions and 128-bit integers to/from JSON requires support package `NeatProto`.
 * Rust
     - Works with Serde.
     - Compiler is available as a crate, so you can easily integrate it with your Rust project using a
@@ -63,18 +68,14 @@ See the <a href="#Comparison">Comparison</a> section to see how NeatProto compar
 | Type aliases          |                                    ✅                                    |        ❌         |      ❌      |       ✅       |
 | Tagged unions         |                                    ✅                                    |        ✅         |      ✅      |       ✅       |
 | Namespaces / packages | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/2) |        ✅         |      ✅      |       ✅       |
-| RPC / services        |                                    ❌                                    |        ✅         |      ✅      |       ✅       |
+| RPC / services        |                                   🚧                                    |        ✅         |      ✅      |       ✅       |
 | Comments              | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/3) |        🟡        |     🟡      |      🟡       |
 | 128-bit integers      |                                    ✅                                    |        ❌         |      ❌      |       ❌       |
-| Embedded protocol*    |                                    ❌                                    |        ✅         |      ❌      |       ❌       |
 
 ✅ = Implemented.
 🟡 = Implemented, but less advanced.
 🚧 = In Progress / Planned.
 ❌ = Not Implemented.
-
-\* - Some other formats allow you to store the protocol as part of serialized data - NeatProto requires you to know
-the structure up front in order to know how to deserialize it.
 
 ## Grammar
 
