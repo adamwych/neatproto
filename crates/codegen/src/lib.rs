@@ -1,10 +1,15 @@
+pub mod csharp;
 pub mod rust;
 mod writer;
 
+pub use crate::csharp::CSharpCodeGenOptions;
+use crate::csharp::generate_csharp;
+pub use crate::rust::RustCodeGenOptions;
+use crate::rust::generate_rust;
 pub use convert_case::{Case, Casing};
-pub use rust::*;
+use neatproto_ast::Block;
 
-#[derive(Default, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone)]
 pub enum NameCase {
     #[default]
     Unchanged,
@@ -24,18 +29,27 @@ impl<T: AsRef<str> + ToString> NameCasing<T> for T {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default, Copy, Clone, clap::ValueEnum)]
+pub enum TargetLanguage {
+    #[default]
+    Rust,
+    Csharp,
+}
+
+#[derive(Debug, Default)]
 pub struct CodeGenOptions {
+    pub target_language: TargetLanguage,
     pub field_name_case: NameCase,
     pub type_name_case: NameCase,
     pub enum_item_name_case: NameCase,
+
     pub rust: RustCodeGenOptions,
+    pub csharp: CSharpCodeGenOptions,
 }
 
-#[derive(Default)]
-pub struct RustCodeGenOptions {
-    pub with_debug: bool,
-    pub with_serde: bool,
-    pub serde_struct_field_name_case: NameCase,
-    pub serde_enum_repr: Option<String>,
+pub fn generate_code(opts: &CodeGenOptions, root_block: &Block) -> String {
+    match opts.target_language {
+        TargetLanguage::Rust => generate_rust(opts, root_block),
+        TargetLanguage::Csharp => generate_csharp(opts, root_block),
+    }
 }

@@ -3,6 +3,14 @@ use crate::{CodeGenOptions, NameCase, NameCasing};
 use convert_case::Case;
 use neatproto_ast::*;
 
+#[derive(Debug, Default)]
+pub struct RustCodeGenOptions {
+    pub with_debug: bool,
+    pub with_serde: bool,
+    pub serde_struct_field_name_case: NameCase,
+    pub serde_enum_repr: Option<String>,
+}
+
 pub fn generate_rust(opts: &CodeGenOptions, root_block: &Block) -> String {
     let mut writer = IndentedWriter::default();
     write_block(opts, &mut writer, root_block, false);

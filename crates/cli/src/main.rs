@@ -1,5 +1,6 @@
 use clap::{Args, Parser, Subcommand};
-use neatproto_codegen::CodeGenOptions;
+use neatproto_codegen::csharp::CSharpCodeGenOptions;
+use neatproto_codegen::{Case, CodeGenOptions, NameCase, TargetLanguage};
 use neatproto_compiler::{CompileError, compile_nproto_to_file, compile_nproto_to_string};
 
 #[derive(Parser, Debug)]
@@ -18,6 +19,9 @@ enum Commands {
 struct CompileCommandArgs {
     input: String,
     output: Option<String>,
+
+    #[arg(short, long)]
+    target: TargetLanguage,
 }
 
 fn compile(args: CompileCommandArgs) -> Result<(), CompileError> {

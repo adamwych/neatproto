@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <PackageId>NeatProto</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Adam Wychowaniec</Authors>
+        <Description>Support package for NeatProto interface description language.</Description>
+        
+        <RepositoryUrl>https://github.com/adamwych/neatproto.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        
+        <PackageProjectUrl>https://github.com/adamwych/neatproto</PackageProjectUrl>
+    </PropertyGroup>
+</Project>
