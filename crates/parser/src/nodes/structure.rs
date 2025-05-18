@@ -3,19 +3,23 @@ use neatproto_ast::{Structure, StructureField, Token, TypeName};
 
 pub fn parse_structure(tokens: &mut Tokens) -> ParseResult<Structure> {
     let name_token = tokens.next_identifier()?;
+    tokens.next_kind(Token::BraceOpen)?;
+    Ok(Structure {
+        name: name_token.value(),
+        fields: parse_structure_body(tokens)?,
+    })
+}
+
+pub fn parse_structure_body(tokens: &mut Tokens) -> ParseResult<Vec<StructureField>> {
     let mut fields = vec![];
 
-    tokens.next_kind(Token::BraceOpen)?;
     while let Some(token) = tokens.next() {
         match token.token {
             Token::Identifier(value) => {
                 fields.push(parse_structure_field(tokens, value)?);
             }
             Token::BraceClose => {
-                return Ok(Structure {
-                    name: name_token.value(),
-                    fields,
-                });
+                return Ok(fields);
             }
             _ => {
                 return Err(LocalizedParseError {

@@ -28,8 +28,12 @@ struct PlayerInfo {
 }
 
 enum CommandType {
-    Spawn = 1,
-    Despawn = 2,
+    Spawn {
+        player: PlayerInfo;
+    },
+    Despawn {
+        uuid: Uuid;
+    }
 }
 ```
 
@@ -46,7 +50,8 @@ See the <a href="#Comparison">Comparison</a> section to see how NeatProto compar
 ## Targets
 
 * Rust
-    - NeatProto compiler is available as a crate, so you can easily integrate it with your Rust project using a
+    - Works with Serde.
+    - Compiler is available as a crate, so you can easily integrate it with your Rust project using a
       build script.
 
 ## Comparison
@@ -56,7 +61,7 @@ See the <a href="#Comparison">Comparison</a> section to see how NeatProto compar
 | Structures            |                                    ✅                                    |        ✅         |      ✅      |       ✅       |
 | Enums                 |                                    ✅                                    |        ✅         |      ✅      |       ✅       |
 | Type aliases          |                                    ✅                                    |        ❌         |      ❌      |       ✅       |
-| Unions                | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/1) |        ✅         |      ✅      |       ✅       |
+| Tagged unions         |                                    ✅                                    |        ✅         |      ✅      |       ✅       |
 | Namespaces / packages | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/2) |        ✅         |      ✅      |       ✅       |
 | RPC / services        |                                    ❌                                    |        ✅         |      ✅      |       ✅       |
 | Comments              | 🚧<br/>[Tracking issue](https://github.com/adamwych/neatproto/issues/3) |        🟡        |     🟡      |      🟡       |

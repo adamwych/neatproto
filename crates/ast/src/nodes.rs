@@ -40,5 +40,6 @@ pub struct Enum {
 #[derive(Debug)]
 pub struct EnumItem {
     pub name: String,
+    pub structure: Option<Structure>,
     pub value_token: Option<LocalizedToken>,
 }

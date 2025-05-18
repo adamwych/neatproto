@@ -1,5 +1,5 @@
-use crate::{LocalizedParseError, ParseError, ParseResult, Tokens};
-use neatproto_ast::{Enum, EnumItem, Token};
+use crate::{LocalizedParseError, ParseError, ParseResult, Tokens, parse_structure_body};
+use neatproto_ast::{Enum, EnumItem, Structure, Token};
 
 pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
     let name_token = tokens.next_identifier()?;
@@ -22,6 +22,7 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
 
                 items.push(EnumItem {
                     name: value.clone(),
+                    structure: None,
                     value_token: None,
                 });
 
@@ -31,6 +32,19 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
             Token::Equal => {
                 if let Some(last_item) = items.last_mut() {
                     last_item.value_token = Some(tokens.next_literal()?);
+                } else {
+                    return Err(LocalizedParseError {
+                        error: ParseError::UnexpectedToken(token.token),
+                        location: token.location,
+                    });
+                }
+            }
+            Token::BraceOpen => {
+                if let Some(last_item) = items.last_mut() {
+                    last_item.structure = Some(Structure {
+                        name: last_item.name.clone(),
+                        fields: parse_structure_body(tokens)?,
+                    });
                 } else {
                     return Err(LocalizedParseError {
                         error: ParseError::UnexpectedToken(token.token),
@@ -65,7 +79,7 @@ pub fn parse_enum(tokens: &mut Tokens) -> ParseResult<Enum> {
 #[cfg(test)]
 mod tests {
     use crate::tests::test_parser;
-    use neatproto_ast::Token;
+    use neatproto_ast::{EnumItem, Token};
     use rstest::rstest;
 
     #[test]
@@ -92,6 +106,58 @@ mod tests {
     #[test]
     fn test_enum_with_dangling_comma() {
         test_parser!(parse_enum, "Foo { Bar, Baz, }");
+    }
+
+    #[test]
+    fn test_tagged_union() {
+        fn test_tagged_union_item(
+            item: &EnumItem,
+            item_name: &str,
+            field_a_name: &str,
+            field_a_type_name: &str,
+            field_b_name: &str,
+            field_b_type_name: &str,
+        ) {
+            assert_eq!(&item.name, item_name);
+            assert!(item.value_token.is_none());
+
+            let fields = &item.structure.as_ref().unwrap().fields;
+            assert_eq!(fields.len(), 2);
+
+            let field_a = fields.get(0).unwrap();
+            assert_eq!(field_a.name, field_a_name);
+            assert_eq!(
+                field_a.type_name.token.token,
+                Token::Identifier(field_a_type_name.into())
+            );
+
+            let field_b = fields.get(1).unwrap();
+            assert_eq!(field_b.name, field_b_name);
+            assert_eq!(
+                field_b.type_name.token.token,
+                Token::Identifier(field_b_type_name.into())
+            );
+        }
+
+        let e = test_parser!(
+            parse_enum,
+            r#"
+            Foo {
+                Bar {
+                    a: float;
+                    b: uint32;
+                },
+                Baz {
+                    a: uint32;
+                    b: float;
+                },
+                Unit,
+            }"#
+        );
+        assert_eq!(&e.name, "Foo");
+
+        test_tagged_union_item(e.items.get(0).unwrap(), "Bar", "a", "float", "b", "uint32");
+        test_tagged_union_item(e.items.get(1).unwrap(), "Baz", "a", "uint32", "b", "float");
     }
 
     #[rstest]

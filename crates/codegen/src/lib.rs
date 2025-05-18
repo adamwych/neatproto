@@ -11,11 +11,15 @@ pub enum NameCase {
     Other(Case<'static>),
 }
 
-impl NameCase {
-    pub fn format(self, name: &String) -> String {
-        match self {
-            NameCase::Unchanged => name.clone(),
-            NameCase::Other(case) => name.to_case(case),
+pub trait NameCasing<T: AsRef<str>> {
+    fn to_name_case(&self, case: NameCase) -> String;
+}
+
+impl<T: AsRef<str> + ToString> NameCasing<T> for T {
+    fn to_name_case(&self, case: NameCase) -> String {
+        match case {
+            NameCase::Unchanged => self.to_string(),
+            NameCase::Other(case) => self.to_case(case),
         }
     }
 }

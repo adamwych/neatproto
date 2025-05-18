@@ -1,7 +1,7 @@
 use crate::writer::IndentedWriter;
-use crate::{CodeGenOptions, NameCase};
+use crate::{CodeGenOptions, NameCase, NameCasing};
 use convert_case::Case;
-use neatproto_ast::{Alias, Block, BlockNode, BuiltinTypeName, Enum, Structure, TypeName};
+use neatproto_ast::*;
 
 pub fn generate_rust(opts: &CodeGenOptions, root_block: &Block) -> String {
     let mut writer = IndentedWriter::default();
@@ -16,7 +16,7 @@ fn write_block(
     with_brackets: bool,
 ) {
     if with_brackets {
-        writer.write_line("{");
+        writer.write_indented_line("{");
         writer.push_indent();
     }
 
@@ -31,82 +31,156 @@ fn write_block(
 
     if with_brackets {
         writer.pop_indent();
-        writer.write_line("}");
+        writer.write_indented_line("}");
     }
 }
 
 fn write_structure(opts: &CodeGenOptions, writer: &mut IndentedWriter, structure: &Structure) {
+    write_structure_attributes(opts, writer, structure);
+
+    writer.write_indented(format!(
+        "pub struct {}",
+        structure.name.to_name_case(opts.type_name_case)
+    ));
+
+    write_structure_body(opts, writer, structure, true);
+}
+
+fn write_structure_attributes(
+    opts: &CodeGenOptions,
+    writer: &mut IndentedWriter,
+    _structure: &Structure,
+) {
     if opts.rust.with_debug {
-        writer.write_line("#[derive(Debug)]");
+        writer.write_indented_line("#[derive(Debug)]");
     }
     if opts.rust.with_serde {
-        writer.write_line("#[derive(Serialize, Deserialize)]");
-
-        if let NameCase::Other(case) = opts.rust.serde_struct_field_name_case {
-            let serde_name = map_case_to_serde(&case).expect("invalid `serde_field_name_case`");
-            writer.write_line(format!("#[serde(rename_all = \"{}\")]", serde_name));
-        }
+        writer.write_indented_line("#[derive(Serialize, Deserialize)]");
+        write_serde_rename_all_attr(opts, writer);
     }
+}
 
-    writer.write_line(format!(
-        "pub struct {} {{",
-        opts.type_name_case.format(&structure.name)
-    ));
+fn write_structure_body(
+    opts: &CodeGenOptions,
+    writer: &mut IndentedWriter,
+    structure: &Structure,
+    with_access_modifiers: bool,
+) {
+    writer.write_line(" {");
     writer.push_indent();
 
     for field in &structure.fields {
-        writer.write_line(format!(
-            "pub {}: {},",
-            opts.field_name_case.format(&field.name),
+        writer.write_indent();
+
+        if with_access_modifiers {
+            writer.write("pub ");
+        }
+
+        writer.write_string_line(format!(
+            "{}: {},",
+            field.name.to_name_case(opts.field_name_case),
             get_full_type_name(opts, &field.type_name)
         ));
     }
 
     writer.pop_indent();
-    writer.write_line("}");
+    writer.write_indented("}");
 }
 
 fn write_alias(opts: &CodeGenOptions, writer: &mut IndentedWriter, alias: &Alias) {
-    writer.write_line(format!(
+    writer.write_indented_line(format!(
         "pub type {} = {};",
-        opts.type_name_case.format(&alias.alias_name),
+        alias.alias_name.to_name_case(opts.type_name_case),
         translate_type_name(opts, &alias.aliased_type_name)
     ));
 }
 
 fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
-    writer.write_line("#[derive(Clone, Copy, PartialEq, Eq)]");
-    if opts.rust.with_debug {
-        writer.write_line("#[derive(Debug)]");
-    }
-    if opts.rust.with_serde {
-        if let Some(repr) = &opts.rust.serde_enum_repr {
-            writer.write_line("#[derive(Serialize_repr, Deserialize_repr)]");
-            writer.write_line(format!("#[repr({})]", repr));
-        } else {
-            writer.write_line("#[derive(Serialize, Deserialize)]");
-        }
+    let is_tagged_union = e.items.iter().any(|item| item.structure.is_some());
+    if is_tagged_union {
+        write_tagged_union(opts, writer, e);
+        return;
     }
 
-    writer.write_line(format!(
+    writer.write_indented_line("#[derive(Clone, Copy, PartialEq, Eq)]");
+
+    if opts.rust.with_debug {
+        writer.write_indented_line("#[derive(Debug)]");
+    }
+
+    if opts.rust.with_serde {
+        if let Some(repr) = &opts.rust.serde_enum_repr {
+            writer.write_indented_line("#[derive(Serialize_repr, Deserialize_repr)]");
+            writer.write_indented_line(format!("#[repr({})]", repr));
+        } else {
+            writer.write_indented_line("#[derive(Serialize, Deserialize)]");
+        }
+
+        write_serde_rename_all_attr(opts, writer);
+    }
+
+    writer.write_indented_line(format!(
         "pub enum {} {{",
-        opts.type_name_case.format(&e.name)
+        e.name.to_name_case(opts.type_name_case)
     ));
     writer.push_indent();
 
     for item in &e.items {
-        writer.write_indented(opts.enum_item_name_case.format(&item.name));
+        writer.write_indented(item.name.to_name_case(opts.enum_item_name_case));
 
         if let Some(value_token) = &item.value_token {
             writer.write(format!(" = {}", value_token.token.value()).as_str());
         }
 
-        writer.write(",");
-        writer.next_line();
+        writer.write_line(",");
     }
 
     writer.pop_indent();
-    writer.write_line("}");
+    writer.write_indented_line("}");
+}
+
+fn write_tagged_union(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
+    if opts.rust.with_debug {
+        writer.write_indented_line("#[derive(Debug)]");
+    }
+
+    if opts.rust.with_serde {
+        writer.write_indented_line("#[derive(Serialize, Deserialize)]");
+        writer.write_indented_line("#[serde(tag = \"kind\", content = \"value\")]");
+        write_serde_rename_all_attr(opts, writer);
+    }
+
+    writer.write_indented_line(format!(
+        "pub enum {} {{",
+        e.name.to_name_case(opts.type_name_case)
+    ));
+    writer.push_indent();
+
+    for item in &e.items {
+        if opts.rust.with_serde {
+            write_serde_rename_all_attr(opts, writer);
+        }
+
+        writer.write_indented(item.name.to_name_case(opts.enum_item_name_case));
+
+        if let Some(structure) = &item.structure {
+            write_structure_body(opts, writer, structure, false);
+        }
+
+        writer.write_line(",");
+    }
+
+    writer.pop_indent();
+    writer.write_indented_line("}");
+}
+
+fn write_serde_rename_all_attr(opts: &CodeGenOptions, writer: &mut IndentedWriter) {
+    if let NameCase::Other(case) = opts.rust.serde_struct_field_name_case {
+        writer.write_indented_line(format!(
+            "#[serde(rename_all = \"{}\")]",
+            map_case_to_serde(&case).expect("invalid `serde_struct_field_name_case`")
+        ));
+    }
 }
 
 /// Maps `Case` enum to a value that `#[serde(rename_all = ???)]` supports.
@@ -138,7 +212,7 @@ fn get_full_type_name(opts: &CodeGenOptions, type_name: &TypeName) -> String {
 fn translate_type_name(opts: &CodeGenOptions, type_name: &String) -> String {
     BuiltinTypeName::parse(type_name)
         .map(|t| translate_builtin_type_name(t).to_string())
-        .unwrap_or_else(|| opts.type_name_case.format(&type_name))
+        .unwrap_or_else(|| type_name.to_name_case(opts.type_name_case))
 }
 
 fn translate_builtin_type_name(type_name: BuiltinTypeName) -> &'static str {
