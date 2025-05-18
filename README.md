@@ -1,7 +1,7 @@
 # NeatProto
 
-NeatProto provides you with the ability to define types using a language-agnostic IDL (Interface
-Description Language), which is then compiled into native code of the language of your choosing.
+NeatProto is an interface description language. It allows you to design an interface and automatically generate
+corresponding code for: Rust (... more coming soon!).
 
 ### Why would I need it?
 
@@ -10,7 +10,7 @@ You will probably want to send some messages between those two, and that means t
 a way to define the structure that will be sent over the network in both, C# and Rust.
 
 The easiest way would be to simply maintain two implementations and manually synchronize them whenever
-you make any change, but that's very cumbersome and error-prone. Instead, you can simply write a NeatProto file and
+you make any change, but that's very inefficient and error-prone. Instead, you can simply write a NeatProto file and
 then generate corresponding C# and Rust code automatically.
 
 ### What does a proto file look like?
@@ -35,6 +35,7 @@ enum CommandType {
 ## Features
 
 * Structures.
+* Enums.
 * Type aliases.
 * 128-bit integer types.
 
@@ -49,13 +50,17 @@ See the <a href="#Comparison">Comparison</a> section to see how NeatProto compar
 ## Comparison
 
 |                     | NeatProto | Protocol Buffers | Flatbuffers | Apache Thrift |
-|---------------------|-----------|------------------|-------------|---------------|
-| Structures          | ✅         | ✅                | ✅           | ✅             |
-| Type aliases        | ✅         | ❌                | ❌           | ✅             |
-| 1:1 binary format*  | ✅         | ❌                | ❌           | ❌             |
-| 128-bit integers    | ✅         | ❌                | ❌           | ❌             |
-| Embedded protocol** | ❌         | ✅                | ❌           | ❌             |
-| Easy to use API     | ✅         | ❌                | ❌           | ❌             |
+|---------------------|:---------:|:----------------:|:-----------:|:-------------:|
+| Structures          |     ✅     |        ✅         |      ✅      |       ✅       |
+| Enums               |     ✅     |        ✅         |      ✅      |       ✅       |
+| Type aliases        |     ✅     |        ❌         |      ❌      |       ✅       |
+| 1:1 binary format*  |    🚧     |        ❌         |      ❌      |       ❌       |
+| 128-bit integers    |     ✅     |        ❌         |      ❌      |       ❌       |
+| Embedded protocol** |     ❌     |        ✅         |      ❌      |       ❌       |
+
+✅ = Implemented.
+🚧 = In Progress / Planned.
+❌ = Not Implemented.
 
 \* - All other formats include some metadata or padding in serialized binary data - NeatProto does not. \
 \** - Some other formats allow you to store the protocol as part of serialized data - NeatProto requires you to know
