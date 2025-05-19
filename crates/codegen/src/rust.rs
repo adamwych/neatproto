@@ -9,6 +9,7 @@ pub struct RustCodeGenOptions {
     pub with_serde: bool,
     pub serde_struct_field_name_case: NameCase,
     pub serde_enum_repr: Option<String>,
+    pub with_enum_display: bool,
 }
 
 pub fn generate_rust(opts: &CodeGenOptions, root_block: &Block) -> String {
@@ -121,7 +122,7 @@ fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
     if opts.rust.with_serde {
         if let Some(repr) = &opts.rust.serde_enum_repr {
             writer.write_indented_line("#[derive(Serialize_repr, Deserialize_repr)]");
-            writer.write_indented_line(format!("#[repr({})]", repr));
+            writer.write_indented_line(format!("#[repr({repr})]"));
         } else {
             writer.write_indented_line("#[derive(Serialize, Deserialize)]");
         }
@@ -129,17 +130,16 @@ fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
         write_serde_rename_all_attr(opts, writer);
     }
 
-    writer.write_indented_line(format!(
-        "pub enum {} {{",
-        e.name.to_name_case(opts.type_name_case)
-    ));
+    let enum_type_name = e.name.to_name_case(opts.type_name_case);
+
+    writer.write_indented_line(format!("pub enum {enum_type_name} {{",));
     writer.push_indent();
 
     for item in &e.items {
         writer.write_indented(item.name.to_name_case(opts.enum_item_name_case));
 
         if let Some(value_token) = &item.value_token {
-            writer.write(format!(" = {}", value_token.token.value()).as_str());
+            writer.write(format!(" = {}", value_token.value()).as_str());
         }
 
         writer.write_line(",");
@@ -147,6 +147,39 @@ fn write_enum(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
 
     writer.pop_indent();
     writer.write_indented_line("}");
+
+    if opts.rust.with_enum_display {
+        writer.write_indented(
+            format!(
+                r#"
+impl std::fmt::Display for {enum_type_name} {{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {{
+        match self {{
+        "#
+            )
+            .trim(),
+        );
+
+        writer.next_line();
+        writer.push_indent();
+        writer.push_indent();
+        writer.push_indent();
+
+        for item in &e.items {
+            let item_name = item.name.to_name_case(opts.enum_item_name_case);
+            let display_value = item.name.clone();
+            writer.write_indented_line(format!(
+                "Self::{item_name} => write!(f, \"{display_value}\"),"
+            ));
+        }
+
+        writer.pop_indent();
+        writer.write_indented_line("}");
+        writer.pop_indent();
+        writer.write_indented_line("}");
+        writer.pop_indent();
+        writer.write_indented_line("}");
+    }
 }
 
 fn write_tagged_union(opts: &CodeGenOptions, writer: &mut IndentedWriter, e: &Enum) {
