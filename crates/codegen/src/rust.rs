@@ -52,6 +52,7 @@ fn write_structure(opts: &CodeGenOptions, writer: &mut IndentedWriter, structure
     ));
 
     write_structure_body(opts, writer, structure, true);
+    writer.next_line();
 }
 
 fn write_structure_attributes(
@@ -59,6 +60,7 @@ fn write_structure_attributes(
     writer: &mut IndentedWriter,
     _structure: &Structure,
 ) {
+    writer.write_indented_line("#[derive(Clone)]");
     if opts.rust.with_debug {
         writer.write_indented_line("#[derive(Debug)]");
     }
